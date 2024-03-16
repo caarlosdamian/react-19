@@ -1,11 +1,17 @@
-import { useState, useEffect } from 'react';
+import { Suspense, use } from 'react';
 
-const PostItems = ({ posts }) => {
+const fetchPosts = async () => {
+  const res = await fetch('https://jsonplaceholder.typicode.com/posts');
+  return res.json();
+};
+
+const PostItems = () => {
+  const posts = use(fetchPosts());
   return (
     <ul>
-      {posts.map((post) => (
-        <div key={post.id} className='bg-blue-50 shadow-md p-4 my-6 rounded-lg'>
-          <h2 className='text-xl font-bold'>{post.title}</h2>
+      {posts && posts.map((post) => (
+        <div key={post.id} className="bg-blue-50 shadow-md p-4 my-6 rounded-lg">
+          <h2 className="text-xl font-bold">{post.title}</h2>
           <p>{post.body}</p>
         </div>
       ))}
@@ -14,30 +20,10 @@ const PostItems = ({ posts }) => {
 };
 
 const Posts = () => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await fetch('https://jsonplaceholder.typicode.com/posts');
-        const data = await res.json();
-        setPosts(data);
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPosts();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return <PostItems posts={posts} />;
+  return (
+    <Suspense fallback={<>Loading....</>}>
+      <PostItems />
+    </Suspense>
+  );
 };
-export default Posts;
+export { Posts as UseExample2 };
